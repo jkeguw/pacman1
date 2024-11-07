@@ -5,18 +5,18 @@
 class PowerUp {
 public:
     enum class Type {
-        SPEED_BOOST,     // 加速
-        GHOST_FREEZER,   // 冻结幽灵
-        POINT_MULTIPLIER,// 分数加倍
-        WALL_PASS,       // 穿墙能力
-        GHOST_VACUUM,    // 吸引幽灵
-        TIME_SLOW        // 减慢时间
+        SPEED_BOOST,     
+        GHOST_FREEZER,   
+        POINT_MULTIPLIER,
+        WALL_PASS,       
+        GHOST_VACUUM,    
+        TIME_SLOW        
     };
 
     struct Effect {
-        int duration;         // 持续时间（毫秒）
-        float magnitude;      // 效果强度
-        std::string message; // 激活时显示的消息
+        int duration;         // Duration time 
+        float magnitude;      // Effect strangth
+        std::string message;  // Message displayed when activated
     };
     int getSpawnTime() const { return spawnTime; }
 
@@ -25,7 +25,7 @@ private:
     Position pos;
     bool active;
     int spawnTime;
-    int displayDuration;  // 道具在地图上显示的时间
+    int displayDuration;  // The time the props is displayed on the map
     char symbol;
     Effect effect;
 

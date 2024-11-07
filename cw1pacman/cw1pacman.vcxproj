@@ -135,7 +135,6 @@
     <ClInclude Include="Pacman.h" />
     <ClInclude Include="Position.h" />
     <ClInclude Include="PowerUp.h" />
-    <ClInclude Include="PowerUpEffect.h" />
     <ClInclude Include="PowerUpManager.h" />
   </ItemGroup>
   <ItemGroup>

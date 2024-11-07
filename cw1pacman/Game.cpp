@@ -1,6 +1,3 @@
-//
-// Created by XOS on 24-11-4.
-//
 #include "Game.h"
 #include "algorithm"
 
@@ -31,7 +28,7 @@ Game::Game() :
 
 void Game::initializeMap() {
     map = std::vector<std::vector<char>>(MAP_HEIGHT, std::vector<char>(MAP_WIDTH));
-    // 28x31的经典吃豆人地图布局
+    // 28x31 classic pacman map
     const char initialMap[MAP_HEIGHT][MAP_WIDTH] = {
            {'#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#','#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#'},
            {'#', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.','#', '#', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.'},
@@ -90,12 +87,12 @@ int Game::countRemainingDots() const {
 }
 
 void Game::drawInfoPanel() {
-    // 绘制分隔线
+    // Draw a separator line
     for (int y = 0; y < MAP_HEIGHT; ++y) {
         console->draw(MAP_WIDTH, y, '|');
     }
 
-    // 游戏信息显示
+    // Game info display
     console->drawString(MAP_WIDTH + 2, 1, centerText("PACMAN", INFO_WIDTH - 3));
     console->drawString(MAP_WIDTH + 2, 3, "SCORE:");
     console->drawString(MAP_WIDTH + 2, 4, centerText(std::to_string(score), INFO_WIDTH - 3));
@@ -104,7 +101,7 @@ void Game::drawInfoPanel() {
     console->drawString(MAP_WIDTH + 2, 9, "DOTS LEFT:");
     console->drawString(MAP_WIDTH + 2, 10, centerText(std::to_string(remainingDots), INFO_WIDTH - 3));
 
-    // 状态显示
+    // Status display
     int yPos = 12;
     if (powerMode) {
         std::string powerStatus = "POWER MODE: " + std::to_string(powerModeTimeLeft / 1000) + "s";
@@ -112,7 +109,7 @@ void Game::drawInfoPanel() {
         yPos += 2;
     }
 
-    // 道具效果显示
+    // Prop effect display
     if (powerUpManager->getScoreMultiplier() > 1.0f) {
         console->drawString(MAP_WIDTH + 2, yPos, "2X SCORE");
         yPos += 2;
@@ -126,7 +123,7 @@ void Game::drawInfoPanel() {
         yPos += 2;
     }
 
-    // 控制说明
+    // Contorl details
     console->drawString(MAP_WIDTH + 2, MAP_HEIGHT - 5, "CONTROLS:");
     console->drawString(MAP_WIDTH + 2, MAP_HEIGHT - 4, "W - Up");
     console->drawString(MAP_WIDTH + 2, MAP_HEIGHT - 3, "S - Down");
@@ -140,38 +137,38 @@ void Game::updateGame() {
 
     int currentTime = GetTickCount();
 
-    // 更新能量模式状态
+    // Update power mode status
     updatePowerMode();
 
-    // 更新道具系统
+    // Updated prop system
     powerUpManager->update(currentTime, map);
 
-    // 获取当前速度倍率
+    // Get the current speed multiplier
     float speedMultiplier = powerUpManager->getPlayerSpeed();
     int moveCount = static_cast<int>(speedMultiplier);
     if (moveCount < 1)
         moveCount = 1;
 
     for (int i = 0; i < moveCount; ++i) {
-        // 保存当前位置
+        // Save current location
         Position currentPos = pacman.getPosition();
 
-        // 移动吃豆人
+        // Move pacman
         pacman.move(map);
         Position newPos = pacman.getPosition();
 
-        // 检查是否可以移动到新位置
+        // Check if can move to a new location
         bool canMove = true;
         if (map[newPos.y][newPos.x] == GameConfig::WALL && !powerUpManager->isWallPassEnabled()) {
             canMove = false;
         }
 
         if (!canMove) {
-            // 如果不能移动，恢复原位置
+            // If it cannot be moved, restore it to its original position
             pacman = Pacman(currentPos.x, currentPos.y);
         }
         else {
-            // 如果可以移动，处理豆子收集
+            // If you can move it, process the bean collection
             if (map[newPos.y][newPos.x] == GameConfig::DOT) {
                 score += static_cast<int>(GameConfig::NORMAL_DOT_SCORE * powerUpManager->getScoreMultiplier());
                 map[newPos.y][newPos.x] = GameConfig::EMPTY;
@@ -187,32 +184,10 @@ void Game::updateGame() {
         }
     }
 
-    // 检查道具碰撞
+    // Checking Prop Collision
     powerUpManager->checkCollision(pacman.getPosition());
 
-    // 更新幽灵位置和检查碰撞
-    //float ghostSpeedMultiplier = powerUpManager->getGhostSpeed();
-    //for (size_t i = 0; i < ghosts.size(); ++i) {
-    //    if (!ghostsAlive[i])
-    //        continue;
-
-    //    if (ghostSpeedMultiplier > 0.0f) {
-    //        ghosts[i].move(map);
-    //        if (ghosts[i].getPosition().x == pacman.getPosition().x &&
-    //            ghosts[i].getPosition().y == pacman.getPosition().y) {
-    //            if (powerMode) {
-    //                score += static_cast<int>(GameConfig::GHOST_SCORE * powerUpManager->getScoreMultiplier());
-    //                ghostsAlive[i] = false;
-    //                ghosts[i].setVisible(false);
-    //            }
-    //            else {
-    //                gameOver = true;
-    //                return;
-    //            }
-    //        }
-    //    }
-    //}
-
+    // Update ghost position and check for collision
     float ghostSpeedMultiplier = powerUpManager->getGhostSpeed();
     for (size_t i = 0; i < ghosts.size(); ++i) {
         if (!ghostsAlive[i]) continue;
@@ -228,14 +203,14 @@ void Game::updateGame() {
                 }
                 else {
                     gameOver = true;
-                    displayGameOverScreen();  // 立即显示游戏结束画面
+                    displayGameOverScreen();  // Immediately display the game over screen
                     return;
                 }
             }
         }
     }
 
-    // 检查是否完成关卡
+    // Check if the level is completed
     if (remainingDots == 0) {
         ++level;
         initializeMap();
@@ -253,14 +228,14 @@ void Game::updateGame() {
 void Game::displayGame() {
     console->clear();
 
-    // 创建显示地图
+    // Create map
     std::vector<std::vector<char>> displayMap = map;
 
-    // 放置吃豆人
+    // Display pacman
     Position pPos = pacman.getPosition();
     displayMap[pPos.y][pPos.x] = pacman.getSymbol();
 
-    // 放置存活的幽灵
+    // Place the ghost alive
     for (size_t i = 0; i < ghosts.size(); ++i) {
         if (ghostsAlive[i]) {
             Position gPos = ghosts[i].getPosition();
@@ -268,7 +243,7 @@ void Game::displayGame() {
         }
     }
 
-    // 显示道具
+    // Display props
     const auto& powerUps = powerUpManager->getPowerUps();
     for (const auto& powerUp : powerUps) {
         if (powerUp->isActive()) {
@@ -287,7 +262,7 @@ void Game::displayGame() {
 void Game::handleGameOver() {
     displayGameOverScreen();
 
-    // 清空输入缓冲
+    // Clear the input buffer
     while (_kbhit()) {
         _getch();
     }
@@ -299,41 +274,41 @@ void Game::handleGameOver() {
             switch (key) {
             case 'r':
             case 'R':
-                // 重置游戏状态
+                // Reset Game State
                 score = 0;
                 level = 1;
                 powerMode = false;
                 powerModeTimeLeft = 0;
                 gameOver = false;
 
-                // 初始化地图和角色
+                // Initialize the map and characters
                 initializeMap();
                 pacman = Pacman(GameConfig::PACMAN_START_X, GameConfig::PACMAN_START_Y);
 
-                // 重置幽灵
+                // Reset Ghost
                 ghosts.clear();
                 ghosts.push_back(Ghost(GameConfig::GHOST_HOME_X - 2, GameConfig::GHOST_HOME_Y));
                 ghosts.push_back(Ghost(GameConfig::GHOST_HOME_X + 2, GameConfig::GHOST_HOME_Y));
                 ghostsAlive = std::vector<bool>(ghosts.size(), true);
 
-                // 重置其他状态
+                // Reset Other status
                 remainingDots = countRemainingDots();
                 powerUpManager->reset();
                 return;
 
             case 'q':
             case 'Q':
-            case 27:  // ESC键
+            case 27:  // ESC
                 exitGame = true;
-                gameOver = true;  // 确保游戏结束
+                gameOver = true;  // Make sure the game is over
                 break;
 
             default:
-                Sleep(100);  // 避免CPU过度使用
+                Sleep(100);  // Avoid CPU overuse
                 break;
             }
         }
-        Sleep(100);  // 避免CPU过度使用
+        Sleep(100);  // Avoid CPU overuse
     }
 }
 
@@ -346,8 +321,8 @@ void Game::run() {
         }
         else {
             handleGameOver();
-            if (gameOver) {  // 如果用户选择退出
-                // 显示最终告别屏幕
+            if (gameOver) {  // If the user chooses to opt out
+                // Show final farewell screen
                 console->clear();
                 std::string thankYou = "Thanks for playing!";
                 console->drawString((TOTAL_WIDTH - thankYou.length()) / 2,
@@ -355,8 +330,8 @@ void Game::run() {
                     thankYou);
                 console->swap();
 
-                // 等待最后一次按键
-                Sleep(1000);  // 显示1秒钟
+                // Waiting for the last key press
+                Sleep(1000);  // Display 1 second
                 while (!_kbhit()) {
                     Sleep(100);
                 }
@@ -379,11 +354,11 @@ void Game::updatePowerMode() {
 void Game::displayGameOverScreen() {
     console->clear();
 
-    // 计算中心位置
+    // Calculate the monitor's center position
     int centerY = MAP_HEIGHT / 2;
     int centerX = TOTAL_WIDTH / 2;
 
-    // 游戏结束消息
+    // Game Over Message
     std::vector<std::string> messages = {
         "GAME OVER!",
         "",
@@ -394,12 +369,12 @@ void Game::displayGameOverScreen() {
         "Press 'Q' or ESC to Quit"
     };
 
-    // 绘制边框
+    // Draw a border
     std::string border(TOTAL_WIDTH - 4, '=');
     console->drawString(2, centerY - 5, border);
     console->drawString(2, centerY + 5, border);
 
-    // 显示消息
+    // Display message
     for (size_t i = 0; i < messages.size(); ++i) {
         std::string centeredText = centerText(messages[i], TOTAL_WIDTH);
         console->drawString(0, centerY - 3 + i, centeredText);

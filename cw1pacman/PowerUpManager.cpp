@@ -10,7 +10,7 @@ PowerUpManager::PowerUpManager()
     wallPassEnabled(false) {}
 
 void PowerUpManager::update(int currentTime, const std::vector<std::vector<char>>& map) {
-    // 移除过期或被收集的道具
+    // Remove expired or collected props
     powerUps.erase(
         std::remove_if(powerUps.begin(), powerUps.end(),
             [currentTime](const auto& powerUp) {
@@ -21,7 +21,7 @@ void PowerUpManager::update(int currentTime, const std::vector<std::vector<char>
         powerUps.end()
     );
 
-    // 如果没有道具存在，且距离上次生成时间已超过间隔，则生成新道具
+    // If no item exists and the interval has passed since the last spawn, a new props is spawned.
     if (powerUps.empty() && currentTime - lastSpawnTime > GameConfig::POWERUP_SPAWN_INTERVAL) {
         spawnPowerUp(map);
         lastSpawnTime = currentTime;
@@ -73,10 +73,10 @@ void PowerUpManager::activatePowerUp(PowerUp::Type type) {
     const auto& effect = PowerUp(type, Position()).getEffect();
     int endTime = currentTime + effect.duration;
 
-    // 保存效果和结束时间
+    // Save effect and end time
     activeEffects.push_back({ type, endTime });
 
-    // 立即应用效果
+    // Apply effects immediately
     switch (type) {
     case PowerUp::Type::SPEED_BOOST:
         playerSpeed = GameConfig::SPEED_BOOST_MULTIPLIER;
@@ -99,7 +99,7 @@ void PowerUpManager::activatePowerUp(PowerUp::Type type) {
 void PowerUpManager::updateEffects(int currentTime) {
     std::vector<PowerUp::Type> expiredEffects;
 
-    // 检查和移除过期效果
+    // Checking and removing expired effects
     for (auto it = activeEffects.begin(); it != activeEffects.end();) {
         if (currentTime > it->second) {
             expiredEffects.push_back(it->first);
@@ -110,7 +110,7 @@ void PowerUpManager::updateEffects(int currentTime) {
         }
     }
 
-    // 重置过期效果
+    // Reset expired effects
     for (const auto& type : expiredEffects) {
         switch (type) {
         case PowerUp::Type::SPEED_BOOST:

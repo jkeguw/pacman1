@@ -13,7 +13,7 @@ public:
     static constexpr int MAP_HEIGHT = 31;
     static constexpr int INFO_WIDTH = 20;
     static constexpr int TOTAL_WIDTH = MAP_WIDTH + INFO_WIDTH;
-    static constexpr int POWER_MODE_DURATION = 20000; // 20√Î
+    static constexpr int POWER_MODE_DURATION = 20000; // 20 seconds
 
 private:
     std::vector<std::vector<char>> map;

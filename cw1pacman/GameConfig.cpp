@@ -15,17 +15,17 @@ namespace GameConfig {
 
     const int GAME_SPEED = 100;
     const int GHOST_SPEED = 2;
-    const int POWER_MODE_DURATION = 10000; // 10秒
+    const int POWER_MODE_DURATION = 10000; // 10s
 
-    // 吃豆人初始位置（底部中间）
+    // Pac-Man's initial position (bottom center)
     const int PACMAN_START_X = 14;
     const int PACMAN_START_Y = 23;
 
-    // 幽灵初始位置（中心）
+    // Ghost initial position (center)
     const int GHOST_HOME_X = 14;
     const int GHOST_HOME_Y = 14;
 
-    //地图
+    // Map size
     const int MAP_WIDTH = 28;
     const int MAP_HEIGHT = 31;
 }

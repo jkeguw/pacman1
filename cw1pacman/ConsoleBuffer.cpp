@@ -2,36 +2,35 @@
 #include <algorithm>
 #include <stdexcept>
 
-// ConsoleBuffer.cpp
 ConsoleBuffer::ConsoleBuffer(int width, int height)
     : gameWidth(width), gameHeight(height), currentBuffer(0) {
 
-    // 获取标准输出句柄
+    // Get standard output handle
     hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
     if (hConsole == INVALID_HANDLE_VALUE) {
         throw std::runtime_error("Failed to get console handle");
     }
 
-    // 设置控制台模式
+    // Set console mode
     DWORD mode;
     GetConsoleMode(hConsole, &mode);
     mode &= ~(ENABLE_QUICK_EDIT_MODE | ENABLE_INSERT_MODE);
     SetConsoleMode(hConsole, mode);
 
-    // 调整实际显示宽度（每个游戏字符占用两列）
-    int displayWidth = width * 2;  // 将宽度翻倍
+    // Adjust actual display width
+    int displayWidth = width * 2;  // Double the width
 
-    // 设置窗口和缓冲区大小
+    // Set window and buffer size
     COORD bufferSize = { static_cast<SHORT>(displayWidth), static_cast<SHORT>(height) };
     SMALL_RECT windowSize = { 0, 0, static_cast<SHORT>(displayWidth - 1), static_cast<SHORT>(height - 1) };
 
-    // 按正确顺序设置大小
+    // with correct order
     SMALL_RECT minWindow = { 0, 0, 1, 1 };
     SetConsoleWindowInfo(hConsole, TRUE, &minWindow);
     SetConsoleScreenBufferSize(hConsole, bufferSize);
     SetConsoleWindowInfo(hConsole, TRUE, &windowSize);
 
-    // 设置字体
+    // font
     CONSOLE_FONT_INFOEX cfi;
     cfi.cbSize = sizeof(cfi);
     cfi.nFont = 0;
@@ -42,13 +41,13 @@ ConsoleBuffer::ConsoleBuffer(int width, int height)
     wcscpy_s(cfi.FaceName, LF_FACESIZE, L"Terminal");  // 使用Terminal字体
     SetCurrentConsoleFontEx(hConsole, FALSE, &cfi);
 
-    // 隐藏光标
+    // hide cursor
     CONSOLE_CURSOR_INFO cursorInfo;
     cursorInfo.dwSize = 1;
     cursorInfo.bVisible = FALSE;
     SetConsoleCursorInfo(hConsole, &cursorInfo);
 
-    // 创建双缓冲，使用显示宽度
+    // Create double buffer with display width
     for (int i = 0; i < 2; ++i) {
         screenBuffer[i] = CreateConsoleScreenBuffer(
             GENERIC_READ | GENERIC_WRITE,
@@ -62,21 +61,21 @@ ConsoleBuffer::ConsoleBuffer(int width, int height)
             throw std::runtime_error("Failed to create screen buffer");
         }
 
-        // 为每个缓冲区设置相同的属性
+        // set same element with every buffer
         SetConsoleScreenBufferSize(screenBuffer[i], bufferSize);
         SetConsoleCursorInfo(screenBuffer[i], &cursorInfo);
         SetConsoleMode(screenBuffer[i], mode);
     }
 
-    // 分配缓冲区内存，使用显示宽度
+    // set buffer memory with display width
     bufferData = new CHAR_INFO[displayWidth * height];
 
-    // 修改类成员变量以使用新的显示宽度
+    // use new showing width
     this->gameWidth = displayWidth;
 
     clear();
 
-    // 设置窗口位置
+    // window position
     HWND consoleWindow = GetConsoleWindow();
     int screenWidth = GetSystemMetrics(SM_CXSCREEN);
     int screenHeight = GetSystemMetrics(SM_CYSCREEN);
@@ -88,26 +87,26 @@ ConsoleBuffer::ConsoleBuffer(int width, int height)
     int posY = (screenHeight - consoleHeight) / 2;
     SetWindowPos(consoleWindow, 0, posX, posY, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
 
-    // 禁止调整窗口大小
+    // prevent modify the size of window
     LONG style = GetWindowLong(consoleWindow, GWL_STYLE);
     style &= ~(WS_MAXIMIZEBOX | WS_SIZEBOX);
     SetWindowLong(consoleWindow, GWL_STYLE, style);
 }
 
 void ConsoleBuffer::draw(int x, int y, char ch) {
-    // 转换坐标以适应双倍宽度
+    // Convert coordinates to fit double width
     int displayX = x * 2;
     if (displayX < 0 || displayX >= gameWidth || y < 0 || y >= gameHeight) return;
 
-    // 设置字符和属性
+    // set char and attributes
     WORD attrs = getCharacterAttributes(ch);
     int index = y * gameWidth + displayX;
 
-    // 在双倍宽度位置绘制字符
+    // Draw characters at double-width positions
     bufferData[index].Char.AsciiChar = ch;
     bufferData[index].Attributes = attrs;
 
-    // 在相邻位置绘制空格，保持相同颜色
+    // Draw spaces at adjacent positions, keeping the same color
     bufferData[index + 1].Char.AsciiChar = ' ';
     bufferData[index + 1].Attributes = attrs;
 }
@@ -175,7 +174,7 @@ WORD ConsoleBuffer::getCharacterAttributes(char ch) {
     case '#': // Wall
         attributes = FOREGROUND_BLUE | FOREGROUND_INTENSITY;
         break;
-        // 道具颜色
+        // Prop Color
     case 'S': // Speed boost
     case 'F': // Ghost freezer
     case 'P': // Point multiplier
@@ -184,7 +183,7 @@ WORD ConsoleBuffer::getCharacterAttributes(char ch) {
     case 'T': // Time slow
         attributes = FOREGROUND_GREEN | FOREGROUND_INTENSITY;
         break;
-    case '|': // 分隔线
+    case '|': // Divider
         attributes = FOREGROUND_BLUE | FOREGROUND_INTENSITY;
         break;
     }
@@ -192,26 +191,26 @@ WORD ConsoleBuffer::getCharacterAttributes(char ch) {
 }
 
 ConsoleBuffer::~ConsoleBuffer() {
-    // 在析构时恢复控制台设置
+    // Restore console settings on destruction
     SetConsoleActiveScreenBuffer(hConsole);
 
-    // 清理缓冲区
+    // Cleaning the Buffer
     for (int i = 0; i < 2; ++i) {
         if (screenBuffer[i] != INVALID_HANDLE_VALUE) {
             CloseHandle(screenBuffer[i]);
         }
     }
 
-    // 释放内存
+    // Freeing up memory
     delete[] bufferData;
 
-    // 恢复控制台模式
+    // Recovery Console Mode
     DWORD mode;
     GetConsoleMode(hConsole, &mode);
     mode |= ENABLE_QUICK_EDIT_MODE | ENABLE_INSERT_MODE;
     SetConsoleMode(hConsole, mode);
 
-    // 恢复窗口样式
+    // Restore window style
     HWND consoleWindow = GetConsoleWindow();
     if (consoleWindow != NULL) {
         LONG style = GetWindowLong(consoleWindow, GWL_STYLE);

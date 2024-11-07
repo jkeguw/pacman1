@@ -1,13 +1,10 @@
-//
-// Created by XOS on 24-11-4.
-//
 #include "Pacman.h"
 #include <conio.h>
 
 Pacman::Pacman(int x, int y) : Character(x, y, GameConfig::PACMAN), directionX(0), directionY(0) {}
 
 void Pacman::move(const std::vector<std::vector<char>>& map) {
-    // 检查键盘输入
+    // Check keyboard input
     if (_kbhit()) {
         int input = _getch();
         switch (input) {
@@ -34,11 +31,11 @@ void Pacman::move(const std::vector<std::vector<char>>& map) {
         }
     }
 
-    // 计算新位置
+    // Calculate new position
     int newX = pos.x + directionX;
     int newY = pos.y + directionY;
 
-    // 检查边界（允许穿过地图边缘）
+    // Check Bounds
     if (newX < 0)
         newX = static_cast<int>(map[0].size()) - 1;
     if (newX >= static_cast<int>(map[0].size()))
@@ -48,7 +45,7 @@ void Pacman::move(const std::vector<std::vector<char>>& map) {
     if (newY >= static_cast<int>(map.size()))
         newY = 0;
 
-    // 更新位置
+    // Update Location
     pos.x = newX;
     pos.y = newY;
 }

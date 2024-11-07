@@ -21,13 +21,13 @@ private:
     HANDLE hConsole;
     HANDLE screenBuffer[2];
     int currentBuffer;
-    int gameWidth;      // 游戏逻辑宽度
-    int gameHeight;     // 游戏逻辑高度
-    int displayWidth;   // 实际显示宽度（2倍gameWidth）
-    int displayHeight;  // 实际显示高度
+    int gameWidth;      // Game logic width
+    int gameHeight;     // Game logic height
+    int displayWidth;   // Actual display width (2 times gameWidth)
+    int displayHeight;  // Actual display height
     CHAR_INFO* bufferData;
 
-    // 添加字符映射表
+    // Add Character Map
     static const char CHAR_PACMAN = 'C';
     static const char CHAR_GHOST = 'M';
     static const char CHAR_DOT = '.';
@@ -35,8 +35,8 @@ private:
     static const char CHAR_WALL = '#';
     static const char CHAR_EMPTY = ' ';
 
-    // 获取字符的显示属性
+    // Get the display attributes of a character
     WORD getCharacterAttributes(char ch);
-    // 获取字符的显示样式
+    // Get the display style of a character
     char getCharacterDisplay(char ch);
 };

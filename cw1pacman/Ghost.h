@@ -5,16 +5,16 @@
 
 class Ghost : public Character {
 private:
-    bool m_visible;  // 改名为m_visible避免命名冲突
+    bool m_visible;  // Avoid naming conflicts
 
 public:
     Ghost(int x, int y) : Character(x, y, GameConfig::GHOST), m_visible(true) {}
 
     void setVisible(bool visible) { m_visible = visible; }
-    bool isVisible() const { return m_visible; }  // 现在可以正确返回m_visible
+    bool isVisible() const { return m_visible; } 
 
     void move(const std::vector<std::vector<char>>& map) override {
-        if (!m_visible) return;  // 使用新的成员变量名
+        if (!m_visible) return;  
 
         int direction = rand() % 4;
         Position newPos = pos;

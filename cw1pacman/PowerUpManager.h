@@ -28,7 +28,7 @@ public:
     void activatePowerUp(PowerUp::Type type);
     void updateEffects(int currentTime);
 
-    // ×´Ì¬²éÑ¯·½·¨
+    // Status query
     float getScoreMultiplier() const { return scoreMultiplier; }
     float getPlayerSpeed() const { return playerSpeed; }
     float getGhostSpeed() const { return ghostSpeed; }

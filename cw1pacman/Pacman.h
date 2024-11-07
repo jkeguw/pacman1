@@ -5,7 +5,7 @@
 
 class Pacman : public Character {
 private:
-    int directionX; // 当前移动方向
+    int directionX; 
     int directionY;
 
 public:
