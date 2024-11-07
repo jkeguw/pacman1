@@ -191,10 +191,31 @@ void Game::updateGame() {
     powerUpManager->checkCollision(pacman.getPosition());
 
     // 更新幽灵位置和检查碰撞
+    //float ghostSpeedMultiplier = powerUpManager->getGhostSpeed();
+    //for (size_t i = 0; i < ghosts.size(); ++i) {
+    //    if (!ghostsAlive[i])
+    //        continue;
+
+    //    if (ghostSpeedMultiplier > 0.0f) {
+    //        ghosts[i].move(map);
+    //        if (ghosts[i].getPosition().x == pacman.getPosition().x &&
+    //            ghosts[i].getPosition().y == pacman.getPosition().y) {
+    //            if (powerMode) {
+    //                score += static_cast<int>(GameConfig::GHOST_SCORE * powerUpManager->getScoreMultiplier());
+    //                ghostsAlive[i] = false;
+    //                ghosts[i].setVisible(false);
+    //            }
+    //            else {
+    //                gameOver = true;
+    //                return;
+    //            }
+    //        }
+    //    }
+    //}
+
     float ghostSpeedMultiplier = powerUpManager->getGhostSpeed();
     for (size_t i = 0; i < ghosts.size(); ++i) {
-        if (!ghostsAlive[i])
-            continue;
+        if (!ghostsAlive[i]) continue;
 
         if (ghostSpeedMultiplier > 0.0f) {
             ghosts[i].move(map);
@@ -207,6 +228,7 @@ void Game::updateGame() {
                 }
                 else {
                     gameOver = true;
+                    displayGameOverScreen();  // 立即显示游戏结束画面
                     return;
                 }
             }
@@ -263,40 +285,55 @@ void Game::displayGame() {
 }
 
 void Game::handleGameOver() {
-    while (_kbhit())
-        _getch(); // 清空输入缓冲
+    displayGameOverScreen();
+
+    // 清空输入缓冲
+    while (_kbhit()) {
+        _getch();
+    }
 
     bool exitGame = false;
     while (!exitGame && gameOver) {
         if (_kbhit()) {
-            char key = _getch();
+            char key = static_cast<char>(_getch());
             switch (key) {
             case 'r':
             case 'R':
-                // 重置游戏
+                // 重置游戏状态
                 score = 0;
                 level = 1;
                 powerMode = false;
                 powerModeTimeLeft = 0;
                 gameOver = false;
+
+                // 初始化地图和角色
                 initializeMap();
                 pacman = Pacman(GameConfig::PACMAN_START_X, GameConfig::PACMAN_START_Y);
+
+                // 重置幽灵
                 ghosts.clear();
                 ghosts.push_back(Ghost(GameConfig::GHOST_HOME_X - 2, GameConfig::GHOST_HOME_Y));
                 ghosts.push_back(Ghost(GameConfig::GHOST_HOME_X + 2, GameConfig::GHOST_HOME_Y));
                 ghostsAlive = std::vector<bool>(ghosts.size(), true);
+
+                // 重置其他状态
                 remainingDots = countRemainingDots();
                 powerUpManager->reset();
                 return;
 
             case 'q':
             case 'Q':
-            case 27: // ESC键
+            case 27:  // ESC键
                 exitGame = true;
+                gameOver = true;  // 确保游戏结束
+                break;
+
+            default:
+                Sleep(100);  // 避免CPU过度使用
                 break;
             }
         }
-        Sleep(100);
+        Sleep(100);  // 避免CPU过度使用
     }
 }
 
@@ -309,19 +346,24 @@ void Game::run() {
         }
         else {
             handleGameOver();
-            if (gameOver)
-                break; // 如果用户选择退出
+            if (gameOver) {  // 如果用户选择退出
+                // 显示最终告别屏幕
+                console->clear();
+                std::string thankYou = "Thanks for playing!";
+                console->drawString((TOTAL_WIDTH - thankYou.length()) / 2,
+                    MAP_HEIGHT / 2,
+                    thankYou);
+                console->swap();
+
+                // 等待最后一次按键
+                Sleep(1000);  // 显示1秒钟
+                while (!_kbhit()) {
+                    Sleep(100);
+                }
+                break;
+            }
         }
     }
-
-    // 显示最终告别屏幕
-    console->clear();
-    std::string thankYou = "Thanks for playing!";
-    console->drawString((TOTAL_WIDTH - thankYou.length()) / 2, MAP_HEIGHT / 2, thankYou);
-    console->swap();
-
-    while (!_kbhit())
-        Sleep(100);
 }
 
 void Game::updatePowerMode() {
@@ -332,4 +374,36 @@ void Game::updatePowerMode() {
             powerModeTimeLeft = 0;
         }
     }
+}
+
+void Game::displayGameOverScreen() {
+    console->clear();
+
+    // 计算中心位置
+    int centerY = MAP_HEIGHT / 2;
+    int centerX = TOTAL_WIDTH / 2;
+
+    // 游戏结束消息
+    std::vector<std::string> messages = {
+        "GAME OVER!",
+        "",
+        "Final Score: " + std::to_string(score),
+        "Level: " + std::to_string(level),
+        "",
+        "Press 'R' to Restart",
+        "Press 'Q' or ESC to Quit"
+    };
+
+    // 绘制边框
+    std::string border(TOTAL_WIDTH - 4, '=');
+    console->drawString(2, centerY - 5, border);
+    console->drawString(2, centerY + 5, border);
+
+    // 显示消息
+    for (size_t i = 0; i < messages.size(); ++i) {
+        std::string centeredText = centerText(messages[i], TOTAL_WIDTH);
+        console->drawString(0, centerY - 3 + i, centeredText);
+    }
+
+    console->swap();
 }

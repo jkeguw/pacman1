@@ -31,6 +31,7 @@ private:
 
     void initializeMap();
     void updatePowerMode();
+    void displayGameOverScreen();
     void updateGame();
     void displayGame();
     void drawInfoPanel();
